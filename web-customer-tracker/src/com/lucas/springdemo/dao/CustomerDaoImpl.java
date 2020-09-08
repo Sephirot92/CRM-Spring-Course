@@ -1,5 +1,6 @@
 package com.lucas.springdemo.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -48,6 +49,43 @@ public class CustomerDaoImpl implements CustomerDAO{
 		Customer theCustomer = currentSession.get(Customer.class, theId);
 		
 		return theCustomer;
+	}
+
+	@Override
+	public void deleteCustomer(int theId) {
+		Session currentSession = sessionFactory.getCurrentSession();
+		
+		Query theQuery = currentSession.createQuery("delete from Customer where id=:customerId");
+		
+		theQuery.setParameter("customerId", theId);
+		
+		theQuery.executeUpdate();
+		
+	}
+
+	@Override
+	public List<Customer> searchCustomer(String theSearchName) {
+		Session currentSession = sessionFactory.getCurrentSession();
+		
+		List<Customer> customers = new ArrayList<Customer>();
+		
+		Query<Customer> theQuery = null;
+		
+		if(theSearchName != null && theSearchName.trim().length() > 0) {
+			theQuery = currentSession.createQuery("from Customer where lower(firstName) like :theName or lower(lastName) "
+					+ "like :theName", Customer.class);
+			
+			theQuery.setParameter("theName", "%" + theSearchName.toLowerCase() + "%");
+			customers = theQuery.getResultList();
+			return customers;
+		}
+		
+		theQuery = currentSession.createQuery("from Customer", Customer.class);
+		customers = theQuery.getResultList();
+		
+		return customers;
+		
+		
 	}
 	
 }
